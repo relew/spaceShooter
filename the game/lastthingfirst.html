@@ -1,0 +1,749 @@
+<!doctype html>
+<meta charset="utf-8">
+<head></head>
+<title>Space shooter</title>
+<script src="pixi.js"></script>
+<script src="pixi-timeout.js"></script>
+
+<style>
+    body {
+      background-color: black;
+      padding: 100;
+      margin: 100;
+    }    
+    canvas {
+        background: #353d49;
+        display: block;
+        margin: 50px;
+      }       
+    #container {
+      display: inline-block;
+      position: relative;
+    }          
+
+    #overlay{
+      display: none;
+      position: fixed;
+      top: 0%;
+      left: 0%;
+      width: 100%;
+      height: 100%;
+      background-color: black;
+      z-index:1001;
+  }
+
+</style>
+</head>
+<body>
+
+<div id="overlay">
+    <div id="container">
+        <canvas id="myCanvas" width="800" height="600"></canvas>
+</div>
+</div>
+
+<script>
+
+let Application = PIXI.Application,
+        Container = PIXI.Container,
+        loader = PIXI.loader,
+        resources = PIXI.loader.resources,
+        Graphics = PIXI.Graphics,
+        TextureCache = PIXI.utils.TextureCache,
+        Sprite = PIXI.Sprite,
+        Text = PIXI.Text,
+        TextStyle = PIXI.TextStyle;
+    
+let app = new Application({ 
+        width: 800, 
+        height: 600,                       
+        antialiasing: true, 
+        transparent: false,
+        resolution: 1
+      }
+    );
+    
+    app.renderer.backgroundColor = 0x353d49;
+    document.body.appendChild(app.view);
+
+    app.loader
+        .add("images/tileset.png")
+        .add("images/shipspace.png")
+        .add("bgBack","assets/space1.png")
+        .add("bgMiddle", "assets/stars01.png")
+        .add("bgFront", "assets/stars02.png")
+        .add("assets/boom.png")
+        app.loader.load();
+   
+    loader
+		.add("images/spacewar.jpg")
+        .add("images/exitw.png")
+        .add("images/game1w.png")
+        .add("images/game2w.png")
+        .add("images/game3w.png")
+        .add("images/spaceship.png")
+        .add("images/logoclean.png")
+		.load(setup1);
+
+    let stage = new PIXI.Container();
+  
+    function setup1() {    }
+
+    //2s splash
+    let texture = PIXI.Texture.fromImage('images/splashplay.png', true);
+		let sprite = new PIXI.Sprite(texture);
+		sprite.position.x = (app.screen.width - sprite.width) / 2;
+		sprite.position.y = (app.screen.height - sprite.height) / 2;
+		stage.addChild(sprite);
+
+		animate();
+    function animate() {
+			if (sprite.position.x < 800
+					|| sprite.position.y < 600) {
+
+				
+					sprite.alpha -= .01;
+				}
+				requestAnimationFrame(animate);
+			
+
+			sprite.position.x += 0.5;
+			app.stage.addChild(stage);
+		}
+
+    //after 2s main menu
+    let timer = new PIXI.setTimeout('2', onstage);
+    let state;
+
+    let startScene;
+    startScene = new Container();
+    app.stage.addChild(startScene);
+
+    function onstage() {
+
+    let splash = new Sprite(resources["images/spacewar.jpg"].texture);
+    splash.width = app.screen.width;
+    splash.height = app.screen.height;
+
+    let startScene;
+    startScene = new Container();
+    app.stage.addChild(startScene);
+    startScene.addChild(splash);
+
+    let logo = new Sprite(resources["images/logoclean.png"].texture);
+    let logo2 = new Sprite(resources["images/logoclean.png"].texture);
+    let logo3 = new Sprite(resources["images/logoclean.png"].texture);
+    let logoX = new Sprite(resources["images/logoclean.png"].texture);  
+
+    let button1 = new Sprite(resources["images/game1w.png"].texture);
+    let textureButtonDown1 = PIXI.Texture.fromImage("images/game1b.png");
+    button1.buttonMode = true;
+
+    button1.anchor.set(0.5);
+    button1.x = 400;
+    button1.y = 175;
+    logo.width = logo.width/4;
+    logo.height= logo.height/4;
+    logo.x = button1.x;
+    logo.y = button1.y - logo.height -22;
+
+    button1.interactive = true;
+    button1.buttonMode = true;
+
+    let button2 = new Sprite(resources["images/game2w.png"].texture);
+    let textureButtonDown2 = PIXI.Texture.fromImage("images/game2b.png");
+    button2.buttonMode = true;
+
+    button2.anchor.set(0.5);
+    button2.x = 400;
+    button2.y = 275;
+    logo2.width = logo2.width/4;
+    logo2.height= logo2.height/4;
+    logo2.x = button2.x;
+    logo2.y = button2.y - logo2.height -22;
+    button2.interactive = true;
+    button2.buttonMode = true;
+
+    let button3 = new Sprite(resources["images/game3w.png"].texture);
+    let textureButtonDown3 = PIXI.Texture.fromImage("images/game3b.png");
+    button3.buttonMode = true;
+
+    button3.anchor.set(0.5);
+    button3.x = 400;
+    button3.y = 375;
+    logo3.width = logo3.width/4;
+    logo3.height= logo3.height/4;
+    logo3.x = button3.x;
+    logo3.y = button3.y - logo3.height -22;
+    button3.interactive = true;
+    button3.buttonMode = true;
+
+    let buttonX = new Sprite(resources["images/exitw.png"].texture);
+    let textureButtonDownX = PIXI.Texture.fromImage("images/exitb.png");
+    buttonX.buttonMode = true;
+
+    buttonX.anchor.set(0.5);
+    buttonX.x = 400;
+    buttonX.y = 475;
+    logoX.width = logoX.width/4;
+    logoX.height= logoX.height/4;
+    logoX.x = buttonX.x;
+    logoX.y = buttonX.y - logoX.height -22;
+    buttonX.interactive = true;
+    buttonX.buttonMode = true;
+    
+    button1
+
+        .on('pointerdown', onButtonDown1)
+    
+    button2
+
+        .on('pointerdown', onButtonDown2)
+
+    button3
+
+        .on('pointerdown', onButtonDown3)
+
+    buttonX
+
+        .on('pointerdown', onButtonDownX)
+
+    startScene.addChild(button1);
+    startScene.addChild(button2);
+    startScene.addChild(button3);
+    startScene.addChild(buttonX);
+    startScene.addChild(logo);
+    startScene.addChild(logo2);
+    startScene.addChild(logo3);
+    startScene.addChild(logoX);
+
+    function removemain() {
+        startScene.removeChild(button1);
+        startScene.removeChild(button2);
+        startScene.removeChild(button3);
+        startScene.removeChild(buttonX);
+        startScene.removeChild(logo);
+        startScene.removeChild(logo2);
+        startScene.removeChild(logo3);
+        startScene.removeChild(logoX);
+    }
+
+    function onButtonDown1() {
+        this.isdown = true;
+        this.texture = textureButtonDown1;
+        this.alpha = 1;
+
+        let timer2 = new PIXI.setTimeout('0.1', onstage2);
+
+        function onstage2() {
+            
+            removemain();
+            app.stage.removeChild(startScene);
+            fun();          
+        }
+
+    }
+
+    function onButtonDown2() {
+        this.isdown = true;
+        this.texture = textureButtonDown2;
+        this.alpha = 1;
+
+        let timer2 = new PIXI.setTimeout('0.1', onstage2);
+
+        function onstage2() {
+            
+            removemain();
+            app.stage.removeChild(startScene);
+            fun();
+        }
+
+    }
+
+    function onButtonDown3() {
+        this.isdown = true;
+        this.texture = textureButtonDown3;
+        this.alpha = 1;
+
+        let timer2 = new PIXI.setTimeout('0.1', onstage2);
+
+        function onstage2() {
+            
+            removemain();
+            app.stage.removeChild(startScene);
+            fun();
+        }
+
+    }
+
+    function onButtonDownX() {
+        this.isdown = true;
+        this.texture = textureButtonDownX;
+        this.alpha = 1;
+
+        let timer2 = new PIXI.setTimeout('0.1', onstage2);
+
+        function onstage2() {
+            
+            removemain();
+            alert("It's not so important who starts the game but who finishes it. 'John Wooden'");
+        }
+
+    }
+
+    function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    let numberOfShips = 10,
+      spacing = 80,
+      xOffset = 0,
+      speed = 0.5,
+      direction = 1;
+
+      ships = [];
+
+   for (let i = 0; i < numberOfShips; i++) {
+
+    ship = new Sprite(resources["images/spaceship.png"].texture);
+    ship.height = 35;
+    ship.width = 45;
+
+    let x = spacing * i + xOffset;
+
+    let y = randomInt(0, app.stage.height - ship.height);
+
+    ship.x = x;
+    ship.y = y;
+
+    ship.vy = speed * direction;
+
+    direction *= -1;
+
+    ships.push(ship);
+
+    startScene.addChild(ship);
+
+    state = play;
+ 
+  app.ticker.add(delta => gameLoop(delta));
+  }
+
+        function gameLoop(delta){
+        state(delta);
+        }
+
+        function play(delta) {
+
+        ships.forEach(function(ship) {
+        ship.y += ship.vy;
+
+        });}
+        }
+
+//gameScene
+function fun() {
+
+let Application = PIXI.Application,
+Container = PIXI.Container,
+loader = PIXI.loader,
+resources = PIXI.loader.resources,
+Sprite = PIXI.Sprite,
+TextureCache = PIXI.utils.TextureCache,
+Rectangle = PIXI.Rectangle,
+Graphics = PIXI.Graphics,
+Text = PIXI.Text,
+TextStyle = PIXI.TextStyle;
+
+let bgBack;
+let bgMiddle;
+let bgFront;
+let bgX = 0;
+let bgSpeed = -1;
+let rocket,message,state;
+let a = 0;
+let bullets = [];
+let bulletSpeed = 10;
+let boxs = [];
+let boxSpeed = 10;
+let timerE;
+let gameOverScene,messageE;
+let gameScene;
+setup();
+
+function setup() {
+
+    
+    gameScene = new Container;
+    app.stage.addChild(gameScene);
+    gameScene.visible = true;
+
+
+    gameOverScene = new Container();
+    app.stage.addChild(gameOverScene);
+    gameOverScene.visible = false;
+
+    //GameOver text
+    let     style2 = new TextStyle({
+            fontFamily: "Futura",
+            fontSize: 64,
+            fill: "white"
+        });
+        messageE = new Text("Game Over!", style2);
+        messageE.x = 400-messageE.width/2;
+        messageE.y = 300 - messageE.height/2;
+        gameOverScene.addChild(messageE);
+    //Parallax scrolling
+    bgBack = createBg(app.loader.resources["bgBack"].texture);
+    bgMiddle = createBg(app.loader.resources["bgMiddle"].texture);
+    bgFront = createBg(app.loader.resources["bgFront"].texture);
+        
+    gameScene.interactive = true;
+    document.addEventListener("keydown",fireBullet);
+
+
+    let texture = TextureCache["images/tileset.png"];
+    let rectangle = new Rectangle(192,128,64,64);
+    texture.frame = rectangle;
+    rocket = new Sprite(texture);
+    // not so random ships
+    let numberOfBoxs = 1000,
+        spacing = 120,
+        xOffset = 800,
+        speed = 1,
+        direction = 1;
+
+  boxs = [];
+
+  for (let i = 0; i < numberOfBoxs; i++) {
+
+    let box = new PIXI.Sprite.from("images/shipspace.png");
+
+    let x = spacing * i + xOffset;
+
+    let y = randomInt(0, app.stage.height - (box.height/5));
+
+    box.height = box.height /5;
+    box.width = box.width/5;
+
+    box.x = x;
+    box.y = y;
+    box.vx = speed;
+
+    boxs.push(box);
+    gameScene.addChild(box);
+    
+  }
+
+    rocket.x=32;
+    rocket.y=32;
+    rocket.vx = 0;
+    rocket.vy = 0;
+    gameScene.addChild(rocket);
+
+    let left = keyboard(37),
+        up = keyboard(38),
+        right = keyboard(39),
+        down = keyboard(40);
+
+    left.press = function() {
+
+        rocket.vx = -5;
+        rocket.vy = 0;
+    };
+
+    left.release = function() {
+
+        if (!right.isDown && rocket.vy === 0) {
+        rocket.vx = 0;
+        }
+    };
+
+    up.press = function() {
+        rocket.vy = -5;
+        rocket.vx = 0;
+    };
+    up.release = function() {
+        if (!down.isDown && rocket.vx === 0) {
+        rocket.vy = 0;
+        }
+    };
+
+    right.press = function() {
+        rocket.vx = 5;
+        rocket.vy = 0;
+    };
+    right.release = function() {
+        if (!left.isDown && rocket.vy === 0) {
+        rocket.vx = 0;
+        }
+    };
+
+    down.press = function() {
+        rocket.vy = 5;
+        rocket.vx = 0;
+    };
+    down.release = function() {
+        if (!up.isDown && rocket.vx === 0) {
+        rocket.vy = 0;
+        }
+    };
+    //scoreboard
+    let style = new TextStyle({
+        fontFamily: "sans-serif",
+        fontSize: 18,
+        fill: "white",
+    }); 
+    message = new Text("Score:0 Good Luck!", style);
+    message.position.set(8, 8);
+    app.stage.addChild(message);
+
+    state = play;
+
+    app.ticker.add(delta => gameLoop(delta));  
+ }
+
+    //Scrolling
+    function createBg(texture){
+        let tiling = new PIXI.extras.TilingSprite(texture,800,600)
+        tiling.position.set(0,0);
+        gameScene.addChild(tiling);
+
+        return tiling;
+
+        }
+    
+function updateBg() {
+        bgX = (bgX + bgSpeed);
+        bgFront.tilePosition.x = bgX;
+        bgMiddle.tilePosition.x = bgX /2;
+        bgBack.tilePosition.x = bgX / 4;
+    }
+
+//Laser
+ function fireBullet(e) {
+    switch(e.keyCode){
+        case 32:
+             let bullet = createBullet();
+             bullets.push(bullet);
+             break;
+    }
+}
+
+
+function createBullet() {
+    let bullet = new PIXI.Sprite.from("images/bullet.png");
+    bullet.anchor.set(0.5);
+    bullet.height = bullet.height / 3;
+    bullet.width = bullet.width / 3;
+    bullet.x = rocket.x + 60;
+    bullet.y = rocket.y + rocket.height / 2;
+    bullet.speed = bulletSpeed;
+    gameScene.addChild(bullet);
+    console.log("elso");
+
+    return bullet;
+}
+
+function updateBullets(delta) {
+    for ( let i=0; i < bullets.length ; i++){
+        bullets[i].x += bullets[i].speed;
+
+        if(bullets[i].position.x > 750){
+            bullets[i].dead = true;
+        }
+    }
+
+    for ( let i=0; i < bullets.length; i++){
+        if(bullets[i].dead){
+            gameScene.removeChild(bullets[i]);
+            bullets.splice(i,1);
+        }
+    }
+
+}
+
+
+ function gameLoop(delta){
+
+    state(delta);
+     
+    updateBullets(delta);
+    updateBg();
+    }
+
+    function randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+    function play(delta) {
+
+        rocket.x += rocket.vx;
+        rocket.y += rocket.vy;
+        contain(rocket, {x: 0, y: 0, width: 800, height: 600});
+
+        boxs.forEach(function(box) {
+
+        if(box.x<800){
+            box.y = box.y + randomInt(-2, 2);
+            box.x = box.x + randomInt(-10, 5);
+        }
+        else{
+            box.x -= 1;
+        }
+        
+        if(hitTestRectangle(rocket, box)) {
+        rocketHit = true;
+
+        let boom = new PIXI.Sprite.from("assets/boom.png");
+            boom.x = rocket.x;
+            boom.y = rocket.y;
+            boom.height = rocket.height;
+            boom.width = rocket.width;
+            gameScene.addChild(boom);
+            rocket.x = 0;
+            rocket.y = 0;
+            gameScene.removeChild(rocket);
+
+            let timerQ = new PIXI.setTimeout('0.5', endit);
+            function endit(){
+                state = end;
+                gameScene.destroy();
+                startScene.destroy()
+                let timerT = new PIXI.setTimeout('1', onstage);
+            }
+        }
+
+        bullets.forEach(function(bullet){
+        
+        if(hitTestRectangle(bullet, box)) {
+            a = a +1;
+            message.text = "Score:" +a;
+
+            let boom = new PIXI.Sprite.from("assets/boom.png");
+            boom.x = box.x;
+            boom.y = box.y;
+            boom.height = box.height;
+            boom.width = box.width*2/3;
+
+            let timerQ = new PIXI.setTimeout('1', boompic);
+            function boompic(){
+            gameScene.removeChild(boom)}
+            gameScene.addChild(boom);
+            box.x= 900;
+            box.y= 900;
+        }})
+
+       })
+    };
+
+    function end(){
+        gameScene.visible = false;
+        gameOverScene.visible = true;
+        message.text = "Score:" + a; 
+    }  
+       
+
+    function contain(sprite, container) {
+
+        let collision = undefined;
+
+        if (sprite.x < container.x) {
+        sprite.x = container.x;
+        collision = "left";
+        }
+
+        if (sprite.y < container.y) {
+        sprite.y = container.y;
+        collision = "top";
+        }
+
+        if (sprite.x + sprite.width > container.width) {
+        sprite.x = container.width - sprite.width;
+        collision = "right";
+        }
+
+        if (sprite.y + sprite.height > container.height) {
+        sprite.y = container.height - sprite.height;
+        collision = "bottom";
+        }
+
+        return collision;
+        }
+
+  function hitTestRectangle(r1, r2) {
+
+    let hit, combinedHalfWidths, combinedHalfHeights, vx, vy;
+    hit = false;
+
+    r1.centerX = r1.x + r1.width / 2; 
+    r1.centerY = r1.y + r1.height / 2; 
+    r2.centerX = r2.x + r2.width / 2; 
+    r2.centerY = r2.y + r2.height / 2; 
+
+    r1.halfWidth = r1.width / 2;
+    r1.halfHeight = r1.height / 2;
+    r2.halfWidth = r2.width / 2;
+    r2.halfHeight = r2.height / 2;
+
+    vx = r1.centerX - r2.centerX;
+    vy = r1.centerY - r2.centerY;
+
+    combinedHalfWidths = r1.halfWidth + r2.halfWidth;
+    combinedHalfHeights = r1.halfHeight + r2.halfHeight;
+
+    if (Math.abs(vx) < combinedHalfWidths) {
+
+    if (Math.abs(vy) < combinedHalfHeights) {
+
+        hit = true;
+    } else {
+
+        hit = false;
+    }
+    } 
+    else {
+
+    hit = false;
+    }
+
+    return hit;
+    };
+    //keyboard 
+    function keyboard(keyCode) {
+    let key = {};
+    key.code = keyCode;
+    key.isDown = false;
+    key.isUp = true;
+    key.press = undefined;
+    key.release = undefined;
+
+    key.downHandler = function(event) {
+    if (event.keyCode === key.code) {
+        if (key.isUp && key.press) key.press();
+        key.isDown = true;
+        key.isUp = false;
+    }
+    event.preventDefault();
+    };
+
+    key.upHandler = function(event) {
+    if (event.keyCode === key.code) {
+        if (key.isDown && key.release) key.release();
+        key.isDown = false;
+        key.isUp = true;
+    }
+    event.preventDefault();
+    };
+
+    window.addEventListener(
+    "keydown", key.downHandler.bind(key), false
+    );
+    window.addEventListener(
+    "keyup", key.upHandler.bind(key), false
+    );
+    return key;
+    }
+}
+</script>
+</body>
+
